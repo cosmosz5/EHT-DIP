@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usage — EHT-DIP</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="brand">EHT<em>-DIP</em></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="method.html">Method</a></li>
+    <li><a href="usage.html" class="active">Usage</a></li>
+    <li><a href="api.html">API</a></li>
+  </ul>
+  <a href="https://github.com/cosmosz5/EHT-DIP" class="nav-gh" target="_blank" rel="noopener">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+    </svg>
+    GitHub
+  </a>
+</nav>
+
+<div class="content">
+  <div class="page-hdr reveal">
+    <div class="section-label">Getting Started</div>
+    <h1>Usage</h1>
+    <p>Installation, data format, reconstruction interface, bootstrap uncertainty estimation, and output files.</p>
+  </div>
+
+  <h2 class="reveal">Installation</h2>
+  <p class="reveal">Requires Python &ge; 3.10 and PyTorch &ge; 2.1. GPU acceleration is supported via CUDA (NVIDIA) or MPS (Apple Silicon), detected automatically. All computations run in <code>float32</code> for MPS compatibility.</p>
+
+  <div class="code-block reveal">
+    <div class="code-bar">
+      <div class="tl-row"><span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span></div>
+      <span class="code-lang">bash</span>
+      <button class="copy-btn" data-target="install">Copy</button>
+    </div>
+    <pre><code class="language-bash" id="install">git clone https://github.com/cosmosz5/EHT-DIP.git
+cd EHT-DIP
+pip install -r requirements.txt</code></pre>
+  </div>
+
+  <h2 class="reveal">Data Format</h2>
+  <p class="reveal">Input data is a Python <code>dict</code> (or <code>.npz</code> file) with the following keys. Closure phase arrays are optional; amplitude-only reconstruction is supported.</p>
+
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>Key</th><th>Shape</th><th>Unit</th><th>Required</th></tr></thead>
+      <tbody>
+        <tr><td><code>u</code>, <code>v</code></td><td>[N]</td><td>wavelengths</td><td>Yes</td></tr>
+        <tr><td><code>vis</code></td><td>[N]</td><td>Jy</td><td>Yes</td></tr>
+        <tr><td><code>vsigma</code></td><td>[N]</td><td>Jy</td><td>Yes</td></tr>
+        <tr><td><code>cphase</code></td><td>[M]</td><td>degrees</td><td>No</td></tr>
+        <tr><td><code>sigmacp</code></td><td>[M]</td><td>degrees</td><td>No</td></tr>
+        <tr><td><code>u1</code>, <code>v1</code>, <code>u2</code>, <code>v2</code></td><td>[M]</td><td>wavelengths</td><td>With <code>cphase</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="reveal" style="font-size:0.875rem; color:var(--text-lo);">Closure triangle baseline 3 is derived internally as <code>(u3,v3) = (-(u1+u2), -(v1+v2))</code>.</p>
+
+  <h2 class="reveal">Running a Reconstruction</h2>
+
+  <div class="code-block reveal">
+    <div class="code-bar">
+      <div class="tl-row"><span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span></div>
+      <span class="code-lang">bash</span>
+      <button class="copy-btn" data-target="run-bash">Copy</button>
+    </div>
+    <pre><code class="language-bash" id="run-bash">python run_eht_dip_tested.py</code></pre>
+  </div>
+
+  <p class="reveal">Edit the <code>data_dict = dict(np.load(...))</code> line to switch observation epochs. Programmatic interface:</p>
+
+  <div class="code-block reveal">
+    <div class="code-bar">
+      <div class="tl-row"><span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span></div>
+      <span class="code-lang">python</span>
+      <button class="copy-btn" data-target="run-py">Copy</button>
+    </div>
+    <pre><code class="language-python" id="run-py">import numpy as np
+from eht_dip_enhanced3_bootstrapping2 import reconstruct_eht_dip
+
+data = dict(np.load("SR1_M87_2017_095_lo_hops_netcal_StokesI.npz"))
+
+image = reconstruct_eht_dip(
+    data_dict          = data,
+    npix               = 64,
+    pixel_size         = 2.0,       # μas / pixel
+    device             = "mps",     # "cuda" | "mps" | "cpu"
+    save_dir           = "results/",
+    save_every         = 400,
+    amp_weight         = 1.5,
+    cp_weight          = 1.0,
+    lambda_tsv         = 10,
+    use_t_amp          = True,  t_nu_amp       = 3,
+    use_t_cp           = True,  t_nu_cp        = 3,
+    lambda_compact     = 0.5,   r_compact_uas  = 40,
+    lambda_void        = 1e-2,  r_void_uas     = 7,
+    num_iter           = 10000,
+    init_gaussian      = True,  gauss_fwhm_uas = 20,
+    blur_sigma0_pix    = 2.0,   blur_decay_iters = 3000,
+    learn_global_scale = True,  global_scale_init = 0.6,
+)
+# image: np.ndarray, shape (64, 64)</code></pre>
+  </div>
+
+  <h2 class="reveal">Bootstrap Uncertainty Estimation</h2>
+
+  <div class="code-block reveal">
+    <div class="code-bar">
+      <div class="tl-row"><span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span></div>
+      <span class="code-lang">python</span>
+      <button class="copy-btn" data-target="boot-py">Copy</button>
+    </div>
+    <pre><code class="language-python" id="boot-py">from eht_dip_enhanced3_bootstrapping2 import reconstruct_eht_dip_bootstrap
+
+result = reconstruct_eht_dip_bootstrap(
+    data_dict       = data,
+    B               = 50,               # number of replicates
+    bootstrap_kind  = "poisson",        # "poisson" | "dirichlet"
+    warm_start      = True,
+    reuse_z         = True,
+    short_num_iter  = 6000,
+    save_stack      = True,
+    save_dir        = "results_bootstrap/",
+    # reconstruction kwargs (same as reconstruct_eht_dip):
+    npix=64, pixel_size=2.0, device="mps",
+    amp_weight=1.5, cp_weight=1.0, lambda_tsv=10,
+    use_t_amp=True, t_nu_amp=3, use_t_cp=True, t_nu_cp=3,
+    lambda_compact=0.5, r_compact_uas=40,
+    lambda_void=1e-2,   r_void_uas=7,
+    num_iter=4000, init_gaussian=True, gauss_fwhm_uas=20,
+    blur_sigma0_pix=2.0, blur_decay_iters=3000,
+    learn_global_scale=True, global_scale_init=0.6,
+)
+
+mean_image = result["mean"]   # (H, W) — mean across replicates
+std_map    = result["std"]    # (H, W) — per-pixel 1σ uncertainty
+q16        = result["q16"]    # (H, W) — 16th percentile
+q84        = result["q84"]    # (H, W) — 84th percentile</code></pre>
+  </div>
+
+  <h2 class="reveal">Key Hyperparameters</h2>
+
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>npix</code></td><td>64</td><td>Image side length (pixels)</td></tr>
+        <tr><td><code>pixel_size</code></td><td>2.0 &mu;as</td><td>Pixel scale</td></tr>
+        <tr><td><code>num_iter</code></td><td>10 000</td><td>Optimization iterations</td></tr>
+        <tr><td><code>amp_weight</code></td><td>1.5</td><td>Visibility amplitude loss weight</td></tr>
+        <tr><td><code>cp_weight</code></td><td>1.0</td><td>Closure phase loss weight</td></tr>
+        <tr><td><code>lambda_tsv</code></td><td>10</td><td>Total squared variation weight</td></tr>
+        <tr><td><code>t_nu_amp</code> / <code>t_nu_cp</code></td><td>3</td><td>Student's-<em>t</em> degrees of freedom</td></tr>
+        <tr><td><code>lambda_compact</code> / <code>r_compact_uas</code></td><td>0.5 / 40 &mu;as</td><td>Compactness penalty</td></tr>
+        <tr><td><code>lambda_void</code> / <code>r_void_uas</code></td><td>0.01 / 7 &mu;as</td><td>Shadow exclusion penalty</td></tr>
+        <tr><td><code>blur_sigma0_pix</code> / <code>blur_decay_iters</code></td><td>2.0 / 3 000</td><td>Coarse-to-fine blur schedule</td></tr>
+        <tr><td><code>B</code></td><td>10</td><td>Bootstrap replicates</td></tr>
+        <tr><td><code>short_num_iter</code></td><td>6 000</td><td>Iterations per bootstrap replicate</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="reveal">Outputs</h2>
+
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>File</th><th>Format</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>results/img_NNNNN.npy</code></td><td>NumPy</td><td>Image snapshot every <code>save_every</code> iterations</td></tr>
+        <tr><td><code>results/image_final_*.npy</code></td><td>NumPy</td><td>Best image (lowest data-term loss)</td></tr>
+        <tr><td><code>*.fits</code></td><td>FITS</td><td>Same image in FITS format (flipped N&rarr;S)</td></tr>
+        <tr><td><code>results/model_outputs.npz</code></td><td>NumPy</td><td>Observed + model visibilities and baselines</td></tr>
+        <tr><td><code>results/image_final.png</code></td><td>PNG</td><td>Reconstructed image (inferno colormap)</td></tr>
+        <tr><td><code>results/vis_amp_fit.png</code></td><td>PNG</td><td>Visibility amplitude: observed vs. model</td></tr>
+        <tr><td><code>results/closure_phase_fit.png</code></td><td>PNG</td><td>Closure phase: observed vs. model</td></tr>
+        <tr><td><code>bootstrap_stack.npy</code></td><td>NumPy</td><td>Full (B, H, W) ensemble (if <code>save_stack=True</code>)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  <p>EHT-DIP &mdash; <a href="index.html">Home</a> &mdash; <a href="https://github.com/cosmosz5/EHT-DIP" target="_blank" rel="noopener">GitHub</a></p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script>
+  const obs = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  }), { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.target;
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+</script>
+</body>
+</html>

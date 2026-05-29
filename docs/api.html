@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Reference — EHT-DIP</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="brand">EHT<em>-DIP</em></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="method.html">Method</a></li>
+    <li><a href="usage.html">Usage</a></li>
+    <li><a href="api.html" class="active">API</a></li>
+  </ul>
+  <a href="https://github.com/cosmosz5/EHT-DIP" class="nav-gh" target="_blank" rel="noopener">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+    </svg>
+    GitHub
+  </a>
+</nav>
+
+<div class="content">
+  <div class="page-hdr reveal">
+    <div class="section-label">Reference</div>
+    <h1>API Reference</h1>
+    <p>All public functions and classes defined in <code>eht_dip_enhanced3_bootstrapping2.py</code>.</p>
+  </div>
+
+  <!-- reconstruct_eht_dip -->
+  <h2 class="reveal">reconstruct_eht_dip</h2>
+  <p class="reveal">Main reconstruction function. Optimizes the U-Net weights to fit the provided interferometric data and returns the best-fit image (lowest combined data-term loss across all iterations).</p>
+
+  <div class="code-block reveal">
+    <div class="code-bar">
+      <div class="tl-row"><span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span></div>
+      <span class="code-lang">python</span>
+      <button class="copy-btn" data-target="sig1">Copy</button>
+    </div>
+    <pre><code class="language-python" id="sig1">reconstruct_eht_dip(
+    data_dict,                              # dict with u,v,vis,vsigma[,cphase,sigmacp,u1,v1,u2,v2]
+    npix=128, pixel_size=5.0,              # image grid
+    device=None,                            # "cuda"|"mps"|"cpu" (auto-detected if None)
+    save_dir=None, save_every=None,         # periodic .npy snapshots
+    amp_weight=None, cp_weight=None,        # data-term weights
+    lambda_tv=None, lambda_tsv=None,        # smoothness
+    use_t_amp=None, t_nu_amp=None,          # amplitude Student-t
+    use_t_cp=None,  t_nu_cp=None,           # closure phase Student-t
+    lambda_flux=None, target_flux=None,     # flux conservation
+    lambda_compact=None, r_compact_uas=None,# compactness
+    lambda_void=None,   r_void_uas=None,    # shadow exclusion
+    lambda_l1=None, lambda_centroid=None,   # sparsity, centroid
+    init_gaussian=None, gauss_fwhm_uas=None,# Gaussian network input init
+    blur_sigma0_pix=None, blur_sigma1_pix=None, blur_decay_iters=None,
+    learn_global_scale=None, global_scale_init=None,
+    lr=None, num_iter=None, out_every=None,
+    return_state=False,                     # if True, return dict with image + state
+) -> np.ndarray | dict</code></pre>
+  </div>
+
+  <p class="reveal"><strong>Returns:</strong> <code>np.ndarray</code> of shape <code>(H, W)</code>. If <code>return_state=True</code>, returns <code>dict</code> with keys <code>"image"</code> and <code>"state"</code> (containing <code>"z"</code> and <code>"model_state_dict"</code>, used for bootstrap warm-starting).</p>
+
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>data_dict</code></td><td>dict</td><td>—</td><td>Interferometric data arrays</td></tr>
+        <tr><td><code>npix</code></td><td>int</td><td>128</td><td>Image side length (pixels)</td></tr>
+        <tr><td><code>pixel_size</code></td><td>float</td><td>5.0</td><td>Pixel scale (&mu;as)</td></tr>
+        <tr><td><code>device</code></td><td>str</td><td>auto</td><td><code>'cuda'</code>, <code>'mps'</code>, or <code>'cpu'</code></td></tr>
+        <tr><td><code>amp_weight</code></td><td>float</td><td>1.0</td><td>Visibility amplitude loss weight</td></tr>
+        <tr><td><code>cp_weight</code></td><td>float</td><td>1.0</td><td>Closure phase loss weight</td></tr>
+        <tr><td><code>lambda_tsv</code></td><td>float</td><td>0.0</td><td>Total squared variation weight</td></tr>
+        <tr><td><code>lambda_tv</code></td><td>float</td><td>0.0</td><td>Total variation weight</td></tr>
+        <tr><td><code>use_t_amp</code></td><td>bool</td><td>True</td><td>Student's-<em>t</em> loss for amplitudes</td></tr>
+        <tr><td><code>t_nu_amp</code></td><td>float</td><td>3.0</td><td>Degrees of freedom (amplitude)</td></tr>
+        <tr><td><code>use_t_cp</code></td><td>bool</td><td>True</td><td>Student's-<em>t</em> loss for closure phases</td></tr>
+        <tr><td><code>t_nu_cp</code></td><td>float</td><td>3.0</td><td>Degrees of freedom (closure phase)</td></tr>
+        <tr><td><code>lambda_compact</code></td><td>float</td><td>0.0</td><td>Compactness penalty weight</td></tr>
+        <tr><td><code>r_compact_uas</code></td><td>float</td><td>None</td><td>Compactness radius (&mu;as)</td></tr>
+        <tr><td><code>lambda_void</code></td><td>float</td><td>0.0</td><td>Inner-void penalty weight</td></tr>
+        <tr><td><code>r_void_uas</code></td><td>float</td><td>None</td><td>Shadow exclusion radius (&mu;as)</td></tr>
+        <tr><td><code>lambda_flux</code></td><td>float</td><td>0.0</td><td>Flux conservation weight</td></tr>
+        <tr><td><code>target_flux</code></td><td>float</td><td>None</td><td>Target integrated flux density (Jy)</td></tr>
+        <tr><td><code>init_gaussian</code></td><td>bool</td><td>False</td><td>Initialize network input with a Gaussian</td></tr>
+        <tr><td><code>gauss_fwhm_uas</code></td><td>float</td><td>None</td><td>FWHM of initialization Gaussian (&mu;as)</td></tr>
+        <tr><td><code>blur_sigma0_pix</code></td><td>float</td><td>None</td><td>Initial output blur &sigma; (pixels)</td></tr>
+        <tr><td><code>blur_decay_iters</code></td><td>int</td><td>20 000</td><td>Iterations to decay blur to <code>blur_sigma1_pix</code></td></tr>
+        <tr><td><code>learn_global_scale</code></td><td>bool</td><td>False</td><td>Learnable global image scale factor &alpha;</td></tr>
+        <tr><td><code>global_scale_init</code></td><td>float</td><td>1.0</td><td>Initial value of &alpha;</td></tr>
+        <tr><td><code>num_iter</code></td><td>int</td><td>2 000</td><td>Optimization iterations</td></tr>
+        <tr><td><code>lr</code></td><td>float</td><td>1e-3</td><td>Adam learning rate</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- reconstruct_eht_dip_bootstrap -->
+  <h2 class="reveal">reconstruct_eht_dip_bootstrap</h2>
+  <p class="reveal">Runs <em>B</em> bootstrap replicates with randomly reweighted data terms and returns ensemble statistics for per-pixel uncertainty quantification.</p>
+
+  <div class="code-block reveal">
+    <div class="code-bar">
+      <div class="tl-row"><span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span></div>
+      <span class="code-lang">python</span>
+      <button class="copy-btn" data-target="sig2">Copy</button>
+    </div>
+    <pre><code class="language-python" id="sig2">reconstruct_eht_dip_bootstrap(
+    data_dict,
+    B=200,
+    bootstrap_kind="poisson",   # "poisson" | "dirichlet"
+    seed=12345,
+    do_baseline_map=True,
+    warm_start=True,
+    short_num_iter=600,
+    reuse_z=True,
+    save_dir=None,
+    save_stack=False,
+    **recon_kwargs              # forwarded to reconstruct_eht_dip
+) -> dict</code></pre>
+  </div>
+
+  <p class="reveal"><strong>Returns dict with keys:</strong></p>
+
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>Key</th><th>Shape</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>mean</code></td><td>(H, W)</td><td>Per-pixel mean image across replicates</td></tr>
+        <tr><td><code>std</code></td><td>(H, W)</td><td>Per-pixel 1&sigma; standard deviation</td></tr>
+        <tr><td><code>q16</code></td><td>(H, W)</td><td>16th percentile</td></tr>
+        <tr><td><code>q84</code></td><td>(H, W)</td><td>84th percentile</td></tr>
+        <tr><td><code>baseline_image</code></td><td>(H, W)</td><td>MAP image from baseline run</td></tr>
+        <tr><td><code>images</code></td><td>(B, H, W)</td><td>Full ensemble (when <code>save_stack=False</code>)</td></tr>
+        <tr><td><code>stack_path</code></td><td>str</td><td>Path to saved <code>.npy</code> stack (when <code>save_stack=True</code>)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>B</code></td><td>200</td><td>Number of bootstrap replicates</td></tr>
+        <tr><td><code>bootstrap_kind</code></td><td><code>'poisson'</code></td><td>Weight distribution: <code>'poisson'</code> or <code>'dirichlet'</code></td></tr>
+        <tr><td><code>do_baseline_map</code></td><td>True</td><td>Run a full MAP reconstruction before bootstrap</td></tr>
+        <tr><td><code>warm_start</code></td><td>True</td><td>Initialize all replicates from baseline network weights</td></tr>
+        <tr><td><code>reuse_z</code></td><td>True</td><td>Fix network input <strong>z</strong> across all replicates</td></tr>
+        <tr><td><code>short_num_iter</code></td><td>600</td><td>Optimization iterations per replicate</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DIPUNet -->
+  <h2 class="reveal">DIPUNet</h2>
+  <p class="reveal">U-Net image generator. Input: fixed random noise; output: unnormalized single-channel image. Pass through <code>softplus</code> externally for positivity constraint.</p>
+
+  <div class="code-block reveal">
+    <div class="code-bar">
+      <div class="tl-row"><span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span></div>
+      <span class="code-lang">python</span>
+      <button class="copy-btn" data-target="sig3">Copy</button>
+    </div>
+    <pre><code class="language-python" id="sig3">DIPUNet(input_depth=32, base=64, depth=5, dropout=0.0)
+# forward: z [B, input_depth, H, W] → [B, 1, H, W]</code></pre>
+  </div>
+
+  <!-- StudentTLoss1D -->
+  <h2 class="reveal">StudentTLoss1D</h2>
+  <p class="reveal">Differentiable Student's-<em>t</em> negative log-likelihood for 1D residuals with optional per-point sigma and sample weights.</p>
+
+  <div class="code-block reveal">
+    <div class="code-bar">
+      <div class="tl-row"><span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span></div>
+      <span class="code-lang">python</span>
+      <button class="copy-btn" data-target="sig4">Copy</button>
+    </div>
+    <pre><code class="language-python" id="sig4">loss = StudentTLoss1D(nu=3.0, learn_sigma=False, init_sigma=1.0)
+nll  = loss(r, sigma=sigma_tensor, weight=weight_tensor)
+# r:      residuals [N]
+# sigma:  per-point uncertainty [N] or None
+# weight: per-point sample weights [N] or None</code></pre>
+  </div>
+
+  <!-- Utilities -->
+  <h2 class="reveal">Utility Functions</h2>
+
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>Function</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>predict_vis(img, Cul, Sul, Cvm, Svm)</code></td><td>NUDFT forward pass; returns <code>[N, 2]</code> (Re, Im)</td></tr>
+        <tr><td><code>precompute_uv(u, v, H, W, cell_size_rad, ...)</code></td><td>Precompute separable cos/sin DFT tables</td></tr>
+        <tr><td><code>tv_loss(img)</code></td><td>Isotropic total variation regularizer</td></tr>
+        <tr><td><code>tsv_loss(img)</code></td><td>Total squared variation regularizer</td></tr>
+        <tr><td><code>gaussian_blur(img, sigma_pix, ...)</code></td><td>Separable Gaussian blur with reflection padding</td></tr>
+        <tr><td><code>wrap_phase(x)</code></td><td>Wrap angle tensor to [&minus;&pi;, &pi;] via <code>atan2</code></td></tr>
+        <tr><td><code>wrap_phase_diff(pred, obs)</code></td><td>Wrapped difference <code>(pred &minus; obs)</code> in [&minus;&pi;, &pi;]</td></tr>
+        <tr><td><code>radial_masks(H, W, cell_size_uas, r_compact, r_void, ...)</code></td><td>Binary compactness and void masks</td></tr>
+        <tr><td><code>centroid_penalty(img, device, dtype)</code></td><td>Flux-weighted centroid offset from image center</td></tr>
+        <tr><td><code>pick_device(explicit)</code></td><td>Auto-select MPS &rarr; CUDA &rarr; CPU</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  <p>EHT-DIP &mdash; <a href="index.html">Home</a> &mdash; <a href="https://github.com/cosmosz5/EHT-DIP" target="_blank" rel="noopener">GitHub</a></p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+  const obs = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  }), { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.target;
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+</script>
+</body>
+</html>

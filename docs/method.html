@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Method — EHT-DIP</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="brand">EHT<em>-DIP</em></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="method.html" class="active">Method</a></li>
+    <li><a href="usage.html">Usage</a></li>
+    <li><a href="api.html">API</a></li>
+  </ul>
+  <a href="https://github.com/cosmosz5/EHT-DIP" class="nav-gh" target="_blank" rel="noopener">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+    </svg>
+    GitHub
+  </a>
+</nav>
+
+<div class="content">
+  <div class="page-hdr reveal">
+    <div class="section-label">Technical Overview</div>
+    <h1>Method</h1>
+    <p>Forward model, network architecture, loss function, coarse-to-fine optimization schedule, and bootstrap uncertainty quantification.</p>
+  </div>
+
+  <!-- 1. Forward model -->
+  <h2 class="reveal">1. Forward Model</h2>
+  <p class="reveal">The interferometric measurement equation relates the source brightness distribution \(I(l,m)\) to the complex visibility \(V(u,v)\) via the van Cittert&ndash;Zernike theorem:</p>
+
+  <div class="math-block reveal">
+    \[V(u,v) = \iint I(l,m)\,e^{-2\pi i(ul+vm)}\,dl\,dm\]
+  </div>
+
+  <p class="reveal">For a discrete \(H \times W\) pixel image, this becomes a <strong>Non-Uniform Discrete Fourier Transform (NUDFT)</strong> evaluated at the observed \((u,v)\) baselines. The transform is implemented as a separable matrix product:</p>
+
+  <div class="math-block reveal">
+    \[\mathbf{A} = I\,C_{ul}^\top,\quad \mathbf{B} = I\,S_{ul}^\top\]
+    \[\operatorname{Re}[V_k] = \sum_h C_{vm,kh}\,A_{hk} - S_{vm,kh}\,B_{hk}\]
+    \[\operatorname{Im}[V_k] = -\!\left(\sum_h C_{vm,kh}\,B_{hk} + S_{vm,kh}\,A_{hk}\right)\]
+  </div>
+
+  <p class="reveal">where \(C_{ul} = \cos(2\pi\, u_k l_j)\), \(S_{ul} = \sin(2\pi\, u_k l_j)\), precomputed once before optimization. This avoids gridding artifacts while remaining fully differentiable for backpropagation.</p>
+
+  <p class="reveal"><strong>Closure phases</strong> — triple products of visibility phases around a baseline triangle — are used alongside amplitudes because they cancel antenna-based gain errors:</p>
+
+  <div class="math-block reveal">
+    \[\psi_{ijk} = \arg\!\left(V_{ij}\cdot V_{jk}\cdot V_{ki}\right)\]
+  </div>
+
+  <!-- 2. Network -->
+  <h2 class="reveal">2. Network Architecture</h2>
+  <p class="reveal">The image is parameterized as \(\hat{I} = f_\theta(\mathbf{z})\), where \(\mathbf{z}\) is a fixed random input of shape \([1,32,H,W]\) and \(f_\theta\) is an untrained U-Net. Only the weights \(\theta\) are optimized — the fixed input prevents the network from collapsing to arbitrary solutions, acting as an implicit structural prior.</p>
+
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>Component</th><th>Specification</th></tr></thead>
+      <tbody>
+        <tr><td>Input depth</td><td>32 channels (fixed random noise)</td></tr>
+        <tr><td>Base channels</td><td>64 (doubled per level, capped at 512)</td></tr>
+        <tr><td>Encoder depth</td><td>5 levels: 64, 128, 256, 512, 512 channels</td></tr>
+        <tr><td>Downsampling</td><td>Average pooling (2&times;)</td></tr>
+        <tr><td>Upsampling</td><td>Bilinear (2&times;) + skip concatenation</td></tr>
+        <tr><td>Normalization</td><td>GroupNorm (groups = min(8, <em>C</em>))</td></tr>
+        <tr><td>Activation</td><td>LeakyReLU (slope 0.2)</td></tr>
+        <tr><td>Output</td><td>1-channel &rarr; <code>softplus</code> for positivity</td></tr>
+        <tr><td>Global scale</td><td>Learnable \(\alpha = \exp(\log\alpha)\) multiplied onto the output</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3. Loss -->
+  <h2 class="reveal">3. Loss Function</h2>
+  <p class="reveal">The total objective is:</p>
+
+  <div class="math-block reveal">
+    \[\mathcal{L} = w_\text{amp}\,\mathcal{L}_\text{amp} + w_\text{cp}\,\mathcal{L}_\text{cp}
+    + \lambda_\text{TSV}\,\mathcal{R}_\text{TSV} + \lambda_\text{TV}\,\mathcal{R}_\text{TV}
+    + \lambda_\text{flux}\,\mathcal{P}_\text{flux} + \lambda_\text{comp}\,\mathcal{P}_\text{comp}
+    + \lambda_\text{void}\,\mathcal{P}_\text{void}
+    + \lambda_{L1}\,\mathcal{R}_{L1} + \lambda_\text{cent}\,\mathcal{P}_\text{cent}\]
+  </div>
+
+  <h3 class="reveal">Data fidelity</h3>
+  <p class="reveal">Both amplitude and closure phase terms use the <strong>Student's-<em>t</em> negative log-likelihood</strong>:</p>
+
+  <div class="math-block reveal">
+    \[\mathcal{L}_t(r,\sigma) = \frac{\nu+1}{2}\log\!\left(1 + \frac{r^2}{\nu\,\sigma^2 s^2}\right)\]
+  </div>
+
+  <p class="reveal">with degrees of freedom \(\nu\) and optional learnable scale \(s\). As \(\nu\to\infty\) this reduces to Gaussian (least-squares); \(\nu=3\) yields heavy tails that robustly down-weight outliers. Residuals are defined as \(r=|\hat{V}|-|V_\text{obs}|\) for amplitudes and \(r=\operatorname{wrap}(\hat\psi-\psi_\text{obs})\) for closure phases, where \(\operatorname{wrap}(\cdot)\) projects to \([-\pi,\pi]\) via <code>atan2(sin,cos)</code>.</p>
+
+  <h3 class="reveal">Regularization</h3>
+
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>Term</th><th>Formula</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td>TSV</td><td>\(\sum(\nabla I)^2\)</td><td>Penalizes squared pixel differences; promotes smooth images</td></tr>
+        <tr><td>TV</td><td>\(\sum|\nabla I|\)</td><td>Isotropic total variation; edge-preserving smoothness</td></tr>
+        <tr><td>L1</td><td>\(\operatorname{mean}(|I|)\)</td><td>Sparsity; suppresses diffuse flux</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="reveal">Geometric penalties</h3>
+
+  <div class="table-wrap reveal">
+    <table>
+      <thead><tr><th>Term</th><th>Formula</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td>Flux</td><td>\((\Sigma I - S_\text{target})^2/S_\text{target}^2\)</td><td>Constrains integrated flux density</td></tr>
+        <tr><td>Compactness</td><td>\(\operatorname{mean}(I\cdot\mathbf{1}[R>R_c])\)</td><td>Suppresses emission outside radius \(R_c\)</td></tr>
+        <tr><td>Void</td><td>\(\operatorname{mean}(I\cdot\mathbf{1}[R<R_0])\)</td><td>Suppresses emission inside shadow radius \(R_0\)</td></tr>
+        <tr><td>Centroid</td><td>\((c_x^2+c_y^2)/R_\text{max}^2\)</td><td>Penalizes flux-weighted centroid offset from image center</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. Blur schedule -->
+  <h2 class="reveal">4. Coarse-to-Fine Optimization</h2>
+  <p class="reveal">The reconstructed image is blurred with a separable Gaussian kernel before computing losses. The blur width decays linearly over the first <code>blur_decay_iters</code> iterations:</p>
+
+  <div class="math-block reveal">
+    \[\sigma(t) = (1-t)\,\sigma_0 + t\,\sigma_1,\quad t = \min\!\left(1,\;\frac{\text{iter}}{\text{blur\_decay\_iters}}\right)\]
+  </div>
+
+  <p class="reveal">This coarse-to-fine schedule prevents premature commitment to high-frequency structure before low-frequency morphology is established.</p>
+
+  <!-- 5. Bootstrap -->
+  <h2 class="reveal">5. Bootstrap Uncertainty Quantification</h2>
+  <p class="reveal">Nonparametric bootstrap resampling provides per-pixel uncertainty estimates without parametric noise assumptions. For each of \(B\) replicates:</p>
+
+  <ol class="reveal">
+    <li>Draw weight vectors \(\mathbf{w}\in\mathbb{R}^N\) and \(\mathbf{w}_\text{cp}\in\mathbb{R}^M\) via <strong>Poisson(1)</strong> sampling (equivalent to the standard pairs bootstrap as \(N\to\infty\)) or <strong>Dirichlet</strong>\((\mathbf{1})\cdot N\) (Bayesian bootstrap).</li>
+    <li>Run a short reconstruction (<code>short_num_iter</code> iterations) warm-started from the baseline MAP solution, applying weights as per-sample multipliers on the loss terms.</li>
+    <li>Collect the ensemble \(\{\hat{I}^{(b)}\}_{b=1}^B\).</li>
+  </ol>
+
+  <p class="reveal">From the ensemble, per-pixel statistics are computed:</p>
+
+  <div class="math-block reveal">
+    \[\bar{I} = \frac{1}{B}\sum_b \hat{I}^{(b)},\qquad \sigma_I = \operatorname{std}_b\!\left\{\hat{I}^{(b)}\right\}\]
+  </div>
+
+  <p class="reveal">along with the 16th and 84th percentiles for non-Gaussian posteriors. Reusing the fixed input \(\mathbf{z}\) and warm-started weights from the baseline run substantially reduces per-replicate cost.</p>
+</div>
+
+<footer>
+  <p>EHT-DIP &mdash; <a href="index.html">Home</a> &mdash; <a href="https://github.com/cosmosz5/EHT-DIP" target="_blank" rel="noopener">GitHub</a></p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left:'$$',right:'$$',display:true},
+      {left:'\\[',right:'\\]',display:true},
+      {left:'$',right:'$',display:false},
+      {left:'\\(',right:'\\)',display:false}
+    ],
+    throwOnError: false
+  });
+
+  const obs = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  }), { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

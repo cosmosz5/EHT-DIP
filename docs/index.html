@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EHT-DIP — Deep Image Prior for EHT Imaging</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+</head>
+<body>
+
+<!-- ── NAVIGATION ──────────────────────────────────────── -->
+<nav>
+  <a href="index.html" class="brand">EHT<em>-DIP</em></a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="method.html">Method</a></li>
+    <li><a href="usage.html">Usage</a></li>
+    <li><a href="api.html">API</a></li>
+  </ul>
+  <a href="https://github.com/cosmosz5/EHT-DIP" class="nav-gh" target="_blank" rel="noopener">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+    </svg>
+    GitHub
+  </a>
+</nav>
+
+<!-- ── HERO ────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+
+  <div class="badge">
+    <span class="badge-dot"></span>
+    Event Horizon Telescope &mdash; M87 2017
+  </div>
+
+  <h1>
+    Deep Image Prior<br>for <span class="grad">EHT Imaging</span>
+  </h1>
+
+  <p class="hero-sub">
+    Interferometric image reconstruction using an untrained U-Net as a structural prior,
+    with Student's-<em>t</em> robust data fidelity and nonparametric bootstrap uncertainty quantification.
+  </p>
+
+  <div class="cta-row">
+    <a href="https://github.com/cosmosz5/EHT-DIP" class="btn btn-accent" target="_blank" rel="noopener">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+      </svg>
+      View on GitHub
+    </a>
+    <a href="method.html" class="btn btn-ghost">
+      Read the Method
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat">
+      <div class="stat-val"><span>64</span>&times;64</div>
+      <div class="stat-lbl">Image pixels</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val"><span>2</span> &mu;as</div>
+      <div class="stat-lbl">Pixel scale</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val"><span>4</span></div>
+      <div class="stat-lbl">Observation epochs</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">&nu;<span>=3</span></div>
+      <div class="stat-lbl">Student's-t d.o.f.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ─────────────────────────────────────────── -->
+<div class="section reveal">
+  <div class="section-label">Architecture</div>
+  <h2 class="section-title">Key Features</h2>
+  <p class="section-desc">A principled Bayesian imaging pipeline tailored to the sparse, long-baseline interferometry of the EHT.</p>
+
+  <div class="grid">
+    <div class="card reveal reveal-delay-1">
+      <div class="card-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <h3>Robust Student's-<em>t</em> Likelihood</h3>
+      <p>Heavy-tailed loss (&#957; = 3) for visibility amplitudes and closure phases, resistant to outliers from calibration errors and RFI.</p>
+    </div>
+
+    <div class="card reveal reveal-delay-2">
+      <div class="card-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        </svg>
+      </div>
+      <h3>Gridding-Free NUDFT Forward Model</h3>
+      <p>Exact separable Non-Uniform DFT maps pixel images to arbitrary (<em>u</em>,<em>v</em>) points without interpolation artifacts.</p>
+    </div>
+
+    <div class="card reveal reveal-delay-3">
+      <div class="card-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+        </svg>
+      </div>
+      <h3>Geometric Regularization</h3>
+      <p>Differentiable compactness, inner-void (shadow), flux conservation, and centroid penalties encode astrophysical priors.</p>
+    </div>
+
+    <div class="card reveal reveal-delay-4">
+      <div class="card-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 20V10M12 20V4M6 20v-6"/>
+        </svg>
+      </div>
+      <h3>Bootstrap Uncertainty Maps</h3>
+      <p>Poisson or Dirichlet multiplier resampling over <em>B</em> replicates yields per-pixel 1&#963; uncertainty images without parametric assumptions.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="hr">
+
+<!-- ── QUICK START ──────────────────────────────────────── -->
+<div class="section reveal">
+  <div class="section-label">Quick Start</div>
+  <h2 class="section-title">Run a Reconstruction</h2>
+  <p class="section-desc">Load any of the four included EHT 2017 M87 epochs and reconstruct in a few lines.</p>
+
+  <div class="code-block">
+    <div class="code-bar">
+      <div class="tl-row"><span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span></div>
+      <span class="code-lang">python</span>
+      <button class="copy-btn" data-target="qs">Copy</button>
+    </div>
+    <pre><code class="language-python" id="qs">import numpy as np
+from eht_dip_enhanced3_bootstrapping2 import reconstruct_eht_dip
+
+data = dict(np.load("SR1_M87_2017_095_lo_hops_netcal_StokesI.npz"))
+
+image = reconstruct_eht_dip(
+    data_dict      = data,
+    npix           = 64,
+    pixel_size     = 2.0,        # μas / pixel
+    device         = "mps",      # or "cuda" / "cpu"
+    num_iter       = 10000,
+    amp_weight     = 1.5,
+    cp_weight      = 1.0,
+    lambda_tsv     = 10,
+    use_t_amp      = True,  t_nu_amp = 3,
+    use_t_cp       = True,  t_nu_cp  = 3,
+    lambda_compact = 0.5,   r_compact_uas = 40,
+    lambda_void    = 1e-2,  r_void_uas    = 7,
+    init_gaussian  = True,  gauss_fwhm_uas = 20,
+    blur_sigma0_pix = 2.0,  blur_decay_iters = 3000,
+    learn_global_scale = True, global_scale_init = 0.6,
+    save_dir       = "results/",
+    save_every     = 400,
+)
+# image: np.ndarray, shape (64, 64)</code></pre>
+  </div>
+</div>
+
+<hr class="hr">
+
+<!-- ── DATA ─────────────────────────────────────────────── -->
+<div class="section reveal">
+  <div class="section-label">Data</div>
+  <h2 class="section-title">EHT 2017 M87 Observations</h2>
+  <p class="section-desc">Four calibrated Stokes I visibility datasets spanning the 2017 EHT observing campaign.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Day</th><th>File</th><th>Band</th><th>Pipeline</th><th>Calibration</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>095</td><td><code>SR1_M87_2017_095_lo_hops_netcal_StokesI.npz</code></td><td>lo</td><td>HOPS</td><td>Network</td></tr>
+        <tr><td>096</td><td><code>SR1_M87_2017_096_lo_hops_netcal_StokesI.npz</code></td><td>lo</td><td>HOPS</td><td>Network</td></tr>
+        <tr><td>100</td><td><code>SR1_M87_2017_100_lo_hops_netcal_StokesI.npz</code></td><td>lo</td><td>HOPS</td><td>Network</td></tr>
+        <tr><td>101</td><td><code>SR1_M87_2017_101_lo_hops_netcal_StokesI.npz</code></td><td>lo</td><td>HOPS</td><td>Network</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-top:1.25rem; font-size:0.875rem; color:var(--text-lo);">
+    Each file contains arrays <code>u</code>, <code>v</code>, <code>vis</code>, <code>vsigma</code>, <code>cphase</code>,
+    <code>sigmacp</code>, <code>u1</code>, <code>v1</code>, <code>u2</code>, <code>v2</code>.
+    See <a href="usage.html">Usage</a> for the full data format specification.
+  </p>
+</div>
+
+<!-- ── FOOTER ───────────────────────────────────────────── -->
+<footer>
+  <p>EHT-DIP &mdash; Deep Image Prior for Event Horizon Telescope Imaging &mdash;
+    <a href="https://github.com/cosmosz5/EHT-DIP" target="_blank" rel="noopener">GitHub</a>
+  </p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>
+  // Scroll-reveal
+  const obs = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  }), { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // Copy buttons
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.target;
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+</script>
+</body>
+</html>

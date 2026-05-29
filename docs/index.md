@@ -32,26 +32,3 @@ Bootstrap resampling over the data provides **per-pixel uncertainty maps** — a
 ## Data
 
 The included `.npz` files contain calibrated Stokes I visibility data from the EHT 2017 M87 campaign (HOPS pipeline, lo-band, network-calibrated), spanning four observation epochs: days 095, 096, 100, and 101.
-
----
-
-## Citation
-
-```bibtex
-@article{EHT_M87_2019_IV,
-  author  = {{The Event Horizon Telescope Collaboration}},
-  title   = {First {M87} Event Horizon Telescope Results. {IV}. Imaging the Central Supermassive Black Hole},
-  journal = {ApJL},
-  volume  = {875},
-  pages   = {L4},
-  year    = {2019},
-  doi     = {10.3847/2041-8213/ab0e85}
-}
-
-@inproceedings{Ulyanov2018,
-  author    = {Ulyanov, Dmitry and Vedaldi, Andrea and Lempitsky, Victor},
-  title     = {Deep Image Prior},
-  booktitle = {CVPR},
-  year      = {2018}
-}
-```

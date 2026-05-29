@@ -107,3 +107,9 @@ Bootstrap outputs (mean/std images) are written as `.fits` files in the working 
 ## License
 
 MIT License. See [LICENSE](LICENSE).
+
+---
+
+## Funding
+
+This research project has been funded by the UNAM DGAPA-PAPIIT project AG 101025 and from the SECIHTI Ciencia de Frontera project CBF-2025-I-3033.

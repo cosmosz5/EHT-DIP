@@ -66,7 +66,7 @@ nav {
   min-height: 100vh;
   display: flex; flex-direction: column;
   align-items: center; justify-content: flex-start;
-  text-align: center; padding: 4.25rem 2rem 4rem;
+  text-align: center; padding: 5rem 2rem 4rem;
   position: relative; overflow: hidden;
 }
 
@@ -80,6 +80,12 @@ nav {
   -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 80%);
 }
 
+.hero-glow {
+  position: absolute; z-index: 0; pointer-events: none;
+  width: 700px; height: 500px;
+  background: radial-gradient(ellipse, rgba(88,166,255,0.1) 0%, rgba(188,140,255,0.05) 50%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%, -55%);
+}
 
 .hero > * { position: relative; z-index: 1; }
 
